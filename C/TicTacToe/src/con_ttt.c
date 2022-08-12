@@ -6,20 +6,24 @@
 
 
 // Includes
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include "../hdr/con_ttt.h"
 
 // Globals
-int conv_board[9] = {6,7,8,11,12,13,16,17,18};
+int conv_board[9] = {6,7,8,11,12,13,16,17,18}; // Array that shows the playable squares
+const int MIDDLE = 4;
+const int CORNERS[4] = {0,2,6,8};
+const int win_directions[4] = {1, 5, 4, 6}; // Array that has the increments to step by for different wins
+
+int ply = 0; // How many moves deep into the search tree
+int positions; // How many actual positions were searched
+int max_ply = 0; // Used to keep track of how many moves deep we are
 
 // Enumerated Constants 0, 1, 2, 3 etc...
 enum {NOUGHTS, CROSSES, BORDER, EMPTY};
 enum {HUMANWIN, COMPWIN, DRAW};
 
 
-// Board Layout
+// Board Layout - Size of 25
 /*
   0,1,2,3,4, 5, 6,7,8, 9,10, 11,12,13, 14,15, 16,17,18, 19,20, 21,22,23,24
   :,:,:,:,:
@@ -28,10 +32,80 @@ enum {HUMANWIN, COMPWIN, DRAW};
   :,16,17,18,:
   :,:,:,:,:
 
+  0,1,2,3,4,
+  5,6,7,8,9,
+  10,11,12,13,14,
+  15,16,17,18,19,
+  20,21,22,23,24
 */
 
+int
+min_max(int *board, int side){
+  // Check for a win
 
-void boardInit(int *board){
+  // Generate all moves for the side
+
+  // Loop through moves, make move and then call minmax to get the move score
+
+  // Asses move
+
+  // End by returning the best score move
+
+  // Define local variables
+  int move_list[9]; // possible moves
+  int move_count = 0; // Moves made
+  int best_score = -2; // Current best score of the moves
+  int score = -2; // Current temp score for a move
+  int best_move = -1; // current best move location
+  int move; // current move
+
+  // Update max depth to look for move if we have gone farther
+  if(ply > max_ply){
+    max_ply = ply;
+  }
+  // Update the positions taken because we have covered another option
+  positions++;
+
+  if(ply > 0){
+    score = evaluate_for_win(board, side);
+    if(score != 0){
+      return score;
+    }
+  }
+  // Fill the move list
+  for(int i = 0; i < 9; ++i){
+    if(board[conv_board[i]] == EMPTY){
+      move_list[move_count++] = conv_board[i];
+    }
+  }
+
+  // Loop through all moves available
+  for(int i = 0; i < move_count; ++i){
+    move = move_list[i];
+    board[move] = side;
+
+    ply++;
+    score = -min_max(board, side^1);
+    if(score > best_score){
+      best_score = score;
+      best_move = move;
+    }
+    board[move] = EMPTY;
+    ply--;
+  }
+  if(move_count == 0){
+    best_score = find_three_in_a_row_all_board(board, side);
+  }
+  if(ply !=0){
+    return best_score;
+  }
+  else{
+    return best_move;
+  }
+
+}
+
+void board_init(int *board){
   // Fill the board with walls
   for(int i = 0; i < 25; i++){
     board[i] = BORDER;
@@ -43,13 +117,13 @@ void boardInit(int *board){
   }
 }
 
-void boardPrint(int *board){
+void board_print(int *board){
   // Define local variables
   char print_chars[] = "OX|-";
 
   // Print out the header
   printf("\n\nBoard:\n\n");
-  
+
   // Loop and print the board
   for(int i = 0; i < 9; i++){
 
@@ -61,7 +135,7 @@ void boardPrint(int *board){
   printf("\n");
 }
 
-int boardHasEmpty(int *board){
+int board_has_empty(int *board){
 
   // Loop through the board squares
   for(int i = 0; i < 9; i++){
@@ -74,11 +148,11 @@ int boardHasEmpty(int *board){
   return 0;
 }
 
-void makeMove(int *board, const int loc, const int player){
+void make_move(int *board, const int loc, const int player){
   board[loc] = player;
 }
 
-int getHumanMove(const int *board){
+int get_human_move(const int *board){
   // Make an array of chars for the user input
   char user_input[4];
 
@@ -100,7 +174,7 @@ int getHumanMove(const int *board){
 
     // This is to make sure that if the user enters a string like
     // asbasdfbsadfb
-    /* 
+    /*
     This way we flush stdin to get rid of remaining characters so we don't
     keep looking for inputs
     */
@@ -142,47 +216,146 @@ int getHumanMove(const int *board){
   return conv_board[move];
 }
 
-int getComputerMove(const int *board){
-  // Local Variables
-  int index = 0;
-  int num_free = 0;
-  int available_moves[9];
-  int rand_move = 0;
-
-  /* 2,4,8
-     availableMoves[0] = 2 numFree++ -> 1
-     availableMoves[1] = 4 numFree++ -> 2
-     availableMoves[2] = 8 numFree++ -> 3
-     
-     rand() % numFree gives 0 to 2 
-     rand number from 0 to 2 and return availableMoves[rand]
-  */
-
-  // Loop through the board squares
-  for(index = 0; index < 9; ++index){
-    // Check if the current square on the board is empty
-    if(board[conv_board[index]] == EMPTY){
-      available_moves[num_free++] = conv_board[index];
-    }
+int
+get_best_move(const int *board){
+  // Get the middle
+  int our_move = conv_board[MIDDLE];
+  if(board[our_move] == EMPTY){
+    return our_move;
   }
 
-  // Get a random number from the array of possible moves
-  rand_move = (rand() % num_free);
-
-  return available_moves[rand_move];
+  // Get open corner
+  our_move = -1;
+  for(int i = 0; i < 4; i++){
+    our_move = conv_board[CORNERS[i]];
+    if(board[our_move] == EMPTY){
+      break;
+    }
+    our_move = -1;
+  } // End For
+  return our_move;
 }
 
-void gameLoop(){
+int
+get_winning_move(int *board,
+		 const int side){
+  int our_move = -1;
+  int win_found = 0;
+
+  for(int i = 0; i < 9; ++i){
+    if(board[conv_board[i]] == EMPTY){
+      our_move = conv_board[i];
+      board[conv_board[i]] = side;
+      if(find_three_in_a_row(board,
+			     our_move,
+			     side) == 3){
+
+	win_found = 1;
+      }
+      board[our_move] = EMPTY;
+      if(win_found == 1){
+	break;
+      }
+      our_move = -1;
+    }
+  }
+  return our_move;
+}
+
+int
+get_computer_move(int *board,
+		  const int side){
+  ply = 0;
+  positions = 0;
+  max_ply = 0;
+  int best = min_max(board, side);
+  printf("Finished searching\nPosition: %d\nMax Depth: %d\nBest Move: %d\n\n", positions, max_ply, best);
+  return best;
+}
+
+int
+check_win_dir(const int *board,
+	      int cur_square,
+	      int dir,
+	      int cur_player_type){
+
+  int cur_player_count = 0;
+  while(board[cur_square] != BORDER){
+    if(board[cur_square] != cur_player_type){
+      break;
+    }
+    cur_player_count++;
+    cur_square+=dir;
+  }
+  return cur_player_count;
+}
+
+int
+find_three_in_a_row(const int *board,
+		    int cur_square,
+		    int cur_player_type){
+  // Define locals
+  int cur_player_count = 1;
+
+  // Loop for all win directions pos an neg
+  for(int i = 0; i < 4; i++){
+    cur_player_count += check_win_dir(board,
+				     cur_square + win_directions[i],
+				     win_directions[i],
+				     cur_player_type);
+    cur_player_count += check_win_dir(board,
+				     cur_square - win_directions[i],
+				     (-1*win_directions[i]),
+				     cur_player_type);
+    if(cur_player_count == 3){
+      break;
+    }
+    cur_player_count = 1;
+  }
+  return cur_player_count;
+}
+
+int
+find_three_in_a_row_all_board(const int *board, const int us){
+  // Define locals
+  int win_found = 0;
+
+  // Check board
+  for(int i = 0; i < 9; ++i){
+    if(board[conv_board[i]] == us){
+      if(find_three_in_a_row(board, conv_board[i], us) == 3){
+	win_found = 1;
+	break;
+      }
+    }
+  }
+  return win_found;
+}
+
+int
+evaluate_for_win(const int *board, const int us){
+  if(find_three_in_a_row_all_board(board, us) != 0){
+    return 1;
+  }
+  if(find_three_in_a_row_all_board(board, us^1) !=0){
+    return -1;
+  }
+
+  return 0;
+
+}
+
+void
+game_loop(){
   // Define local variables before the start of the game
   int game_over = 0;
-  int cur_player = NOUGHTS;
+  int cur_player = CROSSES;
   int last_move = 0;
   int board[25];
-  int move_loc;
-  
+
   // Initialize and print the starting board
-  boardInit(&board[0]);
-  boardPrint(&board[0]);
+  board_init(&board[0]);
+  board_print(&board[0]);
 
   // Start the game loop
   while(!game_over){
@@ -190,39 +363,45 @@ void gameLoop(){
     // Check what player made the move
     if(cur_player == NOUGHTS){
       // Get the move from the player
-      last_move = getHumanMove(&board[0]);
+      last_move = get_human_move(&board[0]);
 
       // Make the move
-      makeMove(&board[0], last_move, cur_player);
+      make_move(&board[0], last_move, cur_player);
 
       // Change the side
       cur_player = CROSSES;
-      
+
     }
     else {
       // Get the move from the computer
-      last_move = getComputerMove(&board[0]);
+      last_move = get_computer_move(&board[0], cur_player);
 
       // Make the move
-      makeMove(&board[0], move_loc, cur_player);
+      make_move(&board[0], last_move, cur_player);
 
       // Change the side
       cur_player = NOUGHTS;
-      
-      // Print the board out
-      boardPrint(&board[0]);
+      board_print(&board[0]);
     }
 
     // Check if there are 3 in a row -- Win
-    
-    // Check if there is no spots left -- Draw
-    if(!boardHasEmpty(board)){
-      printf("Game Over\n");
+    if(find_three_in_a_row(board, last_move, cur_player ^ 1) == 3){
       game_over = 1;
-      printf("The game is a draw\n");
+      if(cur_player == NOUGHTS){
+	printf("Crosses Wins! -> Game Over\n");
+      }
+      else{
+	printf("Noughts Wins! -> Game Over\n");
+      }
+      board_print(&board[0]);
     }
-  }
-  
+    // Check if there is no spots left -- Draw
+    if(!game_over && !board_has_empty(board)){
+      printf("Draw -> Game Over\n");
+      game_over = 1;
+      board_print(&board[0]);
+    }
+  } // End While
 }
 
 int main(int argc, const char *argv[]){
@@ -230,7 +409,7 @@ int main(int argc, const char *argv[]){
   srand(time(NULL));
 
   // Run the Game
-  gameLoop();
-  
+  game_loop();
+
   return 0;
 }
