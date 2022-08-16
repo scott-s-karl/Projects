@@ -102,10 +102,10 @@ min_max(int *board, int side){
   else{
     return best_move;
   }
-
 }
 
-void board_init(int *board){
+void
+board_init(int *board){
   // Fill the board with walls
   for(int i = 0; i < 25; i++){
     board[i] = BORDER;
@@ -117,7 +117,8 @@ void board_init(int *board){
   }
 }
 
-void board_print(int *board){
+void
+board_print(int *board){
   // Define local variables
   char print_chars[] = "OX|-";
 
@@ -135,7 +136,8 @@ void board_print(int *board){
   printf("\n");
 }
 
-int board_has_empty(int *board){
+int
+board_has_empty(int *board){
 
   // Loop through the board squares
   for(int i = 0; i < 9; i++){
@@ -148,11 +150,13 @@ int board_has_empty(int *board){
   return 0;
 }
 
-void make_move(int *board, const int loc, const int player){
+void
+make_move(int *board, const int loc, const int player){
   board[loc] = player;
 }
 
-int get_human_move(const int *board){
+int
+get_human_move(const int *board){
   // Make an array of chars for the user input
   char user_input[4];
 
