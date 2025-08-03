@@ -14,22 +14,22 @@ pygame.display.set_caption("Four Ants in a Square Visualizer")
 font = pygame.font.Font(None, 36)  # Use default font, size 36
 
 # Define colors for use in visualization
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-YELLOW = (255, 255, 0)
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-PURPLE = (128, 0, 128)
-ORANGE= (255, 165, 0)
-GREY = (128, 128, 128)
+RED       = (255, 0, 0)
+GREEN     = (0, 255, 0)
+BLUE      = (0, 0, 255)
+YELLOW    = (255, 255, 0)
+WHITE     = (255, 255, 255)
+BLACK     = (0, 0, 0)
+PURPLE    = (128, 0, 128)
+ORANGE    = (255, 165, 0)
+GREY      = (128, 128, 128)
 TURQUOISE = (64, 224, 208)
 
 class Ant:
-    def __init__(self, name, color, x, y):
+    def __init__(self, name, color, x, y, image):
         self.name = name
         self.color = color
-        self.radius = 10
+        self.radius = 5
         self.x = x
         self.y = y
         self.start_position = self.get_pos()
@@ -37,6 +37,7 @@ class Ant:
         self.move_unit = 5
         self.distance_moved = 0
         self.points_covered = []
+        self.image = image
 
     def store_point(self):
         self.points_covered.append(self.get_pos())
@@ -75,24 +76,28 @@ class Ant:
 
 
 def draw_screen(win, ants, label_surface, paused, run):
-    tl = 100
-    tr = 100
-    wh = 600
+    tl = 100 # Top Left
+    tr = 100 # Top Right
+    wh = 600 # Width/Height
 
     # Fill main window
     win.fill(GREY)
 
     # Draw the label
-    if(paused or not run):
-        win.blit(label_surface, (125, 50))
-    else:
-        win.blit(label_surface, (275, 50))
+    win.blit(label_surface, (400 - (label_surface.get_width()/2), 30))
 
     # Draw Square
     pygame.draw.rect(win, BLACK, (tl, tr, wh, wh))
+    size_label = font.render(str(wh), True, BLACK)
+    win.blit(size_label, (400 - size_label.get_width()/2, 100 - size_label.get_height() - 5))
+    win.blit(size_label, (400 - size_label.get_width()/2, 700 + 5))
 
-    # Draw the ants
+    rotated_surface_pos90 = pygame.transform.rotate(size_label, 90)
+    rotated_surface_neg90 = pygame.transform.rotate(size_label, -90)
+    win.blit(rotated_surface_pos90, (100 - size_label.get_height() - 5, 400 - size_label.get_width()/2))
+    win.blit(rotated_surface_neg90, (700 + 5, 400 - size_label.get_width()/2))
     
+    # Draw the ants
     for ant in ants:
         steps_label = font.render(str(ant.distance_moved), True, ant.color)
         ant.draw(win)
@@ -107,10 +112,7 @@ def check_for_collision(ants):
     for ant in ants:
         cx, cy = ant.get_pos()
         px, py = ant.partner.get_pos()
-        if (math.ceil(cx) == math.ceil(px) and math.ceil(cy) == math.ceil(py)):
-            print(math.ceil(cx))
-            for ant in ants:
-                print(ant.get_pos())
+        if (math.isclose(cx, px, abs_tol=1.5) and math.isclose(cy, py, abs_tol=1.5)):
             return True
     return False
 
@@ -133,10 +135,20 @@ def main(win, width):
     square_bottom = square_top + wh
 
     # Define the ants
-    ant1 = Ant("Ant 1", RED, square_left, square_top)
-    ant2 = Ant("Ant 2", BLUE, square_right, square_top)
-    ant3 = Ant("Ant 3", GREEN, square_right, square_bottom)
-    ant4 = Ant("Ant 4", YELLOW, square_left, square_bottom)
+    scale_size = 100
+    dad_image = pygame.image.load("Dad.jpeg")
+    dad_scaled_image = pygame.transform.scale(dad_image, (scale_size, scale_size)) 
+    steven_image = pygame.image.load("steven.jpeg")
+    steven_scaled_image = pygame.transform.scale(steven_image, (scale_size, scale_size)) 
+    bryan_image = pygame.image.load("Bryan.jpeg")
+    byran_scaled_image = pygame.transform.scale(bryan_image, (scale_size, scale_size)) 
+    taylor_image = pygame.image.load("Taylor.jpeg")
+    taylor_scaled_image = pygame.transform.scale(taylor_image, (scale_size, scale_size)) 
+
+    ant1 = Ant("Ant 1", RED, square_left, square_top, dad_scaled_image)
+    ant2 = Ant("Ant 2", BLUE, square_right, square_top, steven_scaled_image)
+    ant3 = Ant("Ant 3", GREEN, square_right, square_bottom, byran_scaled_image)
+    ant4 = Ant("Ant 4", YELLOW, square_left, square_bottom, taylor_scaled_image)
 
     ants = [ant1, ant2, ant3, ant4]
 
@@ -154,6 +166,7 @@ def main(win, width):
 
 
     # Define the state
+
     run = True
     started = False
     paused = False
