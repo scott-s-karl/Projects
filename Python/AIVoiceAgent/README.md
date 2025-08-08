@@ -1,19 +1,17 @@
-My Awesome Project
-Write a short sentence or two about this project and what it does. Be sure to include a link and a screenshot (we're front end devs so we can actually see our work!).
+# Simple AI Voice Agent
+This is an Pharmacy Assistant AI Voice Agent. It can help you with drug information, placing orders, and checking an order status.
 
-Link to project: 
+## How It's Made:
 
-alt tag
+**Tech used:** Python, Twilio, DeepGram, Ngrok
 
-How It's Made:
-Tech used: HTML, CSS, JavaScript, Framework of choice
+The main tools used in this project are Deepgram, Twilio, and Python. Etc...
 
-Here's where you can go to town on how you actually built this thing. Write as much as you can here, it's totally fine if it's not too much just make sure you write something. If you don't have too much experience on your resume working on the front end that's totally fine. This is where you can really show off your passion and make up for that ten fold.
+## Optimizations/Enhancements
+*(optional)*
 
-Optimizations
-(optional)
+Specific optimizations and enhancements were adding in function calls to handle certain tasks. Additionally tweaking the settings and prompts for Deepgram in order to get a better end product.
 
-You don't have to include this section but interviewers love that you can not only deliver a final product that looks great but also functions efficiently. Did you write something then refactor it later and the result was 5x faster than the original implementation? Did you cache your assets? Things that you write in this section are GREAT to bring up in interviews and you can use this section as reference when studying for technical interviews!
+## Lessons Learned:
 
-Lessons Learned:
-No matter what your experience level, being an engineer means continuously learning. Every time you build something you always have those whoa this is awesome or wow I actually did it! moments. This is where you should share those moments! Recruiters and interviewers love to see that you're self-aware and passionate about growing.
+This was my first real project diving into the AI field. Through this project I was able to get an understanding of Deepgram and Twilio. Through testing I was able to learn how to set them up and what their general limitations were.
